@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% block title %}Request #{{ req_id }}{% endblock %}
+
+{% block content %}
+
+<div class="request-view">
+
+  <h2>Request #{{ req_id }}</h2>
+
+  <p>
+    Status:
+    {% if req.status == 'Pending L1' or req.status == 'Pending L2' %}
+        <span class="tag tag-pending">{{ req.status }}</span>
+    {% elif req.status == 'Approved' %}
+        <span class="tag tag-approved">{{ req.status }}</span>
+    {% elif req.status == 'Rejected' %}
+        <span class="tag tag-rejected">{{ req.status }}</span>
+    {% else %}
+        <span class="tag">{{ req.status }}</span>
+    {% endif %}
+  </p>
+
+  {% if from_submit %}
+  <div class="success-box">
+      Request submitted successfully.<br>
+      <strong>Request ID:</strong> {{ req_id }}<br>
+      {% if edit_link %}
+      <strong>Edit link (for the requester):</strong> <code>{{ edit_link }}</code>
+      {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- ====== BASIC INFO ====== -->
+  <div class="section-title">Basic Information</div>
+  <table class="table table-compact">
+      <tr>
+          <td>Project Name :</td><td>{{ req.project_name }}</td>
+          <td>Unit Number :</td><td>{{ req.unit_number }}</td>
+          <td>Paid Amount :</td><td>{{ req.paid_amount }}</td>
+      </tr>
+      <tr>
+          <td>Buyer Name :</td><td>{{ req.buyer_name }}</td>
+          <td>Agent Name :</td><td>{{ req.agent_name }}</td>
+          <td>Agency Name :</td><td>{{ req.agency_name }}</td>
+      </tr>
+      <tr>
+          <td>Agent Contact :</td><td>{{ req.agent_contact }}</td>
+          <td colspan="4"></td>
+      </tr>
+  </table>
+
+  <!-- ====== MANAGERS SUMMARY (LEVEL 1 & 2) ====== -->
+  <div class="section-title">Managers Summary</div>
+  <table class="table table-compact">
+      <tr>
+          <th>Level</th>
+          <th>Approver</th>
+          <th>Decision</th>
+          <th>Comments</th>
+          <th>Time</th>
+      </tr>
+      <tr>
+          <td>1</td>
+          {% if manager1_sig %}
+              <td>{{ manager1_sig.approver_name }}</td>
+              <td>{{ manager1_sig.decision }}</td>
+              <td>{{ manager1_sig.comments }}</td>
+              <td>{{ manager1_sig.decided_at }}</td>
+          {% else %}
+              <td colspan="4" class="muted">Pending</td>
+          {% endif %}
+      </tr>
+      <tr>
+          <td>2</td>
+          {% if manager2_sig %}
+              <td>{{ manager2_sig.approver_name }}</td>
+              <td>{{ manager2_sig.decision }}</td>
+              <td>{{ manager2_sig.comments }}</td>
+              <td>{{ manager2_sig.decided_at }}</td>
+          {% else %}
+              <td colspan="4" class="muted">Pending</td>
+          {% endif %}
+      </tr>
+  </table>
+
+  <!-- ====== TYPE OF REQUESTS ====== -->
+  <div class="section-title">Type Of Requests (only filled / checked)</div>
+
+  <table class="table table-compact">
+      {% if req.price_reduction_selected or req.pr_listed_price or req.pr_selling_price %}
+      <tr>
+          <td style="width:22%">Price Reduction</td>
+          <td>
+              Listed Price: {{ req.pr_listed_price }}<br>
+              Discount Amount: {{ req.pr_discount_amount }}<br>
+              Selling Price: {{ req.pr_selling_price }}<br>
+              %: {{ req.pr_discount_percent }}
+          </td>
+      </tr>
+      {% endif %}
+
+      {% if req.bulk_discount_selected or req.bd_listed_price or req.bd_units %}
+      <tr>
+          <td>Discount For Bulk Purchase (3+ Units)</td>
+          <td>
+              Listed Price: {{ req.bd_listed_price }}<br>
+              Discount Amount: {{ req.bd_discount_amount }}<br>
+              Selling Price: {{ req.bd_selling_price }}<br>
+              %: {{ req.bd_discount_percent }}<br>
+              No. of Units: {{ req.bd_units }}
+          </td>
+      </tr>
+      {% endif %}
+
+      {% if req.change_payment_plan_selected or req.cpp_down_payment_percent %}
+      <tr>
+          <td>Change In Payment Plan</td>
+          <td>
+              Down Payment %: {{ req.cpp_down_payment_percent }} | Date: {{ req.cpp_down_payment_date }}<br>
+              2nd Payment %: {{ req.cpp_2nd_payment_percent }} | Date: {{ req.cpp_2nd_payment_date }}<br>
+              3rd Payment %: {{ req.cpp_3rd_payment_percent }} | Date: {{ req.cpp_3rd_payment_date }}<br>
+              4th Payment %: {{ req.cpp_4th_payment_percent }} | Date: {{ req.cpp_4th_payment_date }}<br>
+              5th Payment %: {{ req.cpp_5th_payment_percent }} | Date: {{ req.cpp_5th_payment_date }}<br>
+              6th Payment %: {{ req.cpp_6th_payment_percent }} | Date: {{ req.cpp_6th_payment_date }}<br>
+              Completion Payment %: {{ req.cpp_completion_percent }} | Date: {{ req.cpp_completion_date }}
+          </td>
+      </tr>
+      {% endif %}
+
+      {% if req.unit_switch_selected or req.us_booked_unit or req.us_new_unit %}
+      <tr>
+          <td>Unit Switch</td>
+          <td>
+              Booked Unit: {{ req.us_booked_unit }}<br>
+              New Unit: {{ req.us_new_unit }}<br>
+              New Unit Selling Price: {{ req.us_new_unit_selling_price }}
+          </td>
+      </tr>
+      {% endif %}
+
+      {% if req.unit_cancellation_selected or req.uc_amount_paid %}
+      <tr>
+          <td>Unit Cancellation</td>
+          <td>Amount Paid: {{ req.uc_amount_paid }}</td>
+      </tr>
+      {% endif %}
+
+      {% if req.refund_selected or req.rf_refund_amount or req.rf_booking_fees_amount or req.rf_payment_amount %}
+      <tr>
+          <td>Refund</td>
+          <td>
+              Booking Fees Amount: {{ req.rf_booking_fees_amount }}<br>
+              Payment Amount: {{ req.rf_payment_amount }}<br>
+              Refund Amount: {{ req.rf_refund_amount }}
+          </td>
+      </tr>
+      {% endif %}
+
+      {% if req.late_payment_selected or req.lp_initial_due_date or req.lp_payment_schedule_no or req.lp_new_payment_date %}
+      <tr>
+          <td>Late Payment</td>
+          <td>
+              Payment Schedule No: {{ req.lp_payment_schedule_no }}<br>
+              Initial Due Date: {{ req.lp_initial_due_date }}<br>
+              New Payment Date: {{ req.lp_new_payment_date }}<br>
+              Penalty Amount: {{ req.lp_penalty_amount }}<br>
+              Overdue Period: {{ req.lp_overdue_period }}
+          </td>
+      </tr>
+      {% endif %}
+
+      {% if req.waiver_late_fee_selected or req.wl_penalty_amount or req.wl_downpayment_spa_date or req.wl_2nd_payment_spa_date or req.wl_3rd_payment_spa_date or req.wl_4th_payment_spa_date or req.wl_5th_payment_spa_date or req.wl_6th_payment_spa_date or req.wl_waiver_amount %}
+      <tr>
+          <td>Waiver Of Late Payment Fees</td>
+          <td>
+              Downpayment SPA Date: {{ req.wl_downpayment_spa_date }}<br>
+              2nd Payment SPA Date: {{ req.wl_2nd_payment_spa_date }}<br>
+              3rd Payment SPA Date: {{ req.wl_3rd_payment_spa_date }}<br>
+              4th Payment SPA Date: {{ req.wl_4th_payment_spa_date }}<br>
+              5th Payment SPA Date: {{ req.wl_5th_payment_spa_date }}<br>
+              6th Payment SPA Date: {{ req.wl_6th_payment_spa_date }}<br>
+              Penalty Amount: {{ req.wl_penalty_amount }}<br>
+              Waiver Amount: {{ req.wl_waiver_amount }}
+          </td>
+      </tr>
+      {% endif %}
+
+      {% if req.issuance_spa_selected or req.spa_down_payment_received %}
+      <tr>
+          <td>Issuance Of The SPA</td>
+          <td>
+              Down Payment Received: {{ req.spa_down_payment_received }}<br>
+              %: {{ req.spa_percent }}
+          </td>
+      </tr>
+      {% endif %}
+
+      {% if req.registration_dld_selected or req.dld_down_payment_received %}
+      <tr>
+          <td>Registration In DLD</td>
+          <td>
+              Down Payment Received: {{ req.dld_down_payment_received }}<br>
+              %: {{ req.dld_percent }}
+          </td>
+      </tr>
+      {% endif %}
+
+      {% if req.others_selected or req.others_text %}
+      <tr>
+          <td>Others</td>
+          <td>{{ req.others_text }}</td>
+      </tr>
+      {% endif %}
+  </table>
+
+  <!-- ====== DOCUMENTATION TERMS / CLAUSES ====== -->
+  <div class="section-title">Change In Documentation Terms / Clauses</div>
+
+  <table class="table table-compact">
+      {% if req.doc_kyc %}
+      <tr><td>1. KYC :</td><td>{{ req.doc_kyc }}</td></tr>
+      {% endif %}
+      {% if req.doc_reservation_agreement %}
+      <tr><td>2. Reservation Agreement :</td><td>{{ req.doc_reservation_agreement }}</td></tr>
+      {% endif %}
+      {% if req.doc_spa %}
+      <tr><td>3. SPA :</td><td>{{ req.doc_spa }}</td></tr>
+      {% endif %}
+      {% if req.doc_others %}
+      <tr><td>4. Others :</td><td>{{ req.doc_others }}</td></tr>
+      {% endif %}
+      {% if req.comments %}
+      <tr><td>Comments :</td><td>{{ req.comments }}</td></tr>
+      {% endif %}
+  </table>
+
+  <!-- ====== REQUESTED BY ====== -->
+  <div class="section-title">Requested By</div>
+  <table class="table table-compact">
+      <tr>
+          <td>Agent Signature:</td><td>{{ req.requested_by_signature }}</td>
+          <td>Date:</td><td>{{ req.requested_by_date }}</td>
+      </tr>
+  </table>
+
+  <!-- ====== AUTHORIZATION (MANAGERS) ====== -->
+  <div class="section-title">Authorization</div>
+  <table class="table table-compact">
+      <tr>
+          <th>Level</th>
+          <th>Approver</th>
+          <th>Decision</th>
+          <th>Comments</th>
+          <th>Time</th>
+      </tr>
+      <tr>
+          <td>1</td>
+          {% if manager1_sig %}
+              <td>{{ manager1_sig.approver_name }}</td>
+              <td>{{ manager1_sig.decision }}</td>
+              <td>{{ manager1_sig.comments }}</td>
+              <td>{{ manager1_sig.decided_at }}</td>
+          {% else %}
+              <td colspan="4" class="muted">Pending</td>
+          {% endif %}
+      </tr>
+      <tr>
+          <td>2</td>
+          {% if manager2_sig %}
+              <td>{{ manager2_sig.approver_name }}</td>
+              <td>{{ manager2_sig.decision }}</td>
+              <td>{{ manager2_sig.comments }}</td>
+              <td>{{ manager2_sig.decided_at }}</td>
+          {% else %}
+              <td colspan="4" class="muted">Pending</td>
+          {% endif %}
+      </tr>
+  </table>
+
+  <!-- ====== APPROVALS FLOW (FULL HISTORY) ====== -->
+  <h3>Approvals Flow</h3>
+  <table class="table table-compact">
+      <tr>
+          <th>Level</th>
+          <th>Approver</th>
+          <th>Decision</th>
+          <th>Comments</th>
+          <th>Time</th>
+      </tr>
+      {% for a in approvals %}
+      <tr>
+          <td>{{ a.level }}</td>
+          <td>{{ a.approver_name }}</td>
+          <td>{{ a.decision }}</td>
+          <td>{{ a.comments }}</td>
+          <td>{{ a.decided_at }}</td>
+      </tr>
+      {% endfor %}
+      {% if approvals|length == 0 %}
+      <tr><td colspan="5" class="muted">No approvals yet.</td></tr>
+      {% endif %}
+  </table>
+
+  <!-- ====== MANAGER DECISION FORM (WHEN OPENED من لينك المدير) ====== -->
+  {% if manager_level %}
+  <hr>
+  <h3>Manager Level {{ manager_level }} Decision</h3>
+
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="post">
+      <p>
+          Approver Name:
+          <input type="text" name="approver_name">
+      </p>
+      <p>
+          Decision:
+          <label><input type="radio" name="decision" value="Approved"> Approve</label>
+          <label><input type="radio" name="decision" value="Rejected"> Reject</label>
+      </p>
+      <p>
+          Comments:<br>
+          <textarea name="comments"></textarea>
+      </p>
+      <button class="btn btn-primary" type="submit">Submit Decision</button>
+  </form>
+  {% endif %}
+
+</div>
+
+{% endblock %}

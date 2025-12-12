@@ -1,0 +1,440 @@
+/* ================================
+   BASIC RESETS
+================================ */
+body {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: #f5f6fa;
+    margin: 0;
+    padding: 0;
+    color: #222;
+}
+
+h1, h2, h3, h4, h5 {
+    margin: 0 0 10px 0;
+}
+
+/* ================================
+   PAGE WRAPPER
+================================ */
+.approval-page,
+.request-view {
+    background: #fff;
+    padding: 25px 35px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.10);
+}
+
+/* ================================
+   HEADER / LETTER HEAD
+================================ */
+.approval-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 15px;
+}
+
+.company-logo {
+    width: 95px;
+    height: auto;
+}
+
+.company-name {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.company-details div {
+    font-size: 13px;
+    color: #555;
+}
+
+/* ================================
+   FORM INPUTS
+================================ */
+.input-line, input[type="date"], input[type="number"], select, textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.input-line:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #0078ff;
+    box-shadow: 0 0 2px #0078ff90;
+    outline: none;
+}
+
+.input-line.small { width: 160px; }
+.input-line.tiny  { width: 100px; }
+.input-line.large { width: 300px; }
+.input-line.wide  { width: 100%; }
+
+.textarea-long {
+    width: 100%;
+    border-radius: 6px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.req {
+    color: #d80000;
+    font-weight: bold;
+}
+
+/* ================================
+   SECTION BOXES
+================================ */
+.section-box {
+    margin-top: 25px;
+    padding: 18px 22px;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #0078ff;
+}
+
+.section-header {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+/* ================================
+   TABLE STYLING
+================================ */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.table th {
+    background: #0078ff;
+    color: #fff;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.table-compact td {
+    padding: 6px 8px;
+}
+
+/* ================================
+   REQUEST TABLE ACTIVE ROWS
+================================ */
+.requests-table .request-row.active {
+    background: #e8f3ff !important;
+    border-left: 4px solid #0078ff;
+}
+
+/* ================================
+   GRID & FLEX HELPERS
+================================ */
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.row-flex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.inline label {
+    margin-right: 5px;
+}
+
+/* ================================
+   BUTTONS
+================================ */
+button, .btn-primary, .btn-secondary {
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #0078ff;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #005fcc;
+}
+
+.btn-secondary {
+    background: #ddd;
+    color: #222;
+}
+
+.btn-secondary:hover {
+    background: #ccc;
+}
+
+.btn-small {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+/* ================================
+   TAG COLORS (Status)
+================================ */
+.tag {
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+}
+
+.tag-pending  { background: #ff9900; }
+.tag-approved { background: #28a745; }
+.tag-rejected { background: #d80000; }
+
+/* ================================
+   MANAGER DASHBOARD STATS
+================================ */
+.stats-grid {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.08);
+}
+
+.stat-approved {
+    background: #e8ffe8;
+    border-color: #48c048;
+}
+
+.stat-rejected {
+    background: #ffe8e8;
+    border-color: #d85858;
+}
+
+/* ================================
+   MESSAGES: SUCCESS / ERROR
+================================ */
+.error-box {
+    background: #ffe2e2;
+    border-left: 4px solid #d80000;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+}
+
+.success-box {
+    background: #e5ffe5;
+    border-left: 4px solid #28a745;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+}
+
+.muted {
+    color: #777;
+}
+
+/* ================================
+   TABLE WRAPPER
+================================ */
+.table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+/* ================================
+   ACTIONS BAR
+================================ */
+.actions {
+    margin-top: 20px;
+    text-align: right;
+}
+
+/* ================================
+   LOGIN BOX
+================================ */
+.login-box {
+    background: #fff;
+    padding: 25px 35px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.12);
+}
+
+.form-card .form-group {
+    margin-bottom: 15px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: #e4e9f2;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.filter-btn.active {
+    background: #0078ff;
+    color: #fff;
+}
+
+.sort-bar {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 14px;
+}
+
+.sort-btn {
+    padding: 6px 12px;
+    background: #eee;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+}
+
+.sort-btn.active {
+    background: #0078ff;
+    color: #fff;
+}
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #e4e9f2;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.filter-btn.active {
+    background: #0078ff;
+    color: #fff;
+}
+
+.sort-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.sort-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #eee;
+    text-decoration: none;
+    color: #333;
+}
+
+.sort-btn.active {
+    background: #0078ff;
+    color: #fff;
+}
+
+.row-mine {
+    background: #fffce5;
+}
+
+.mine-badge {
+    background: #ffc107;
+    color: #000;
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 11px;
+    margin-left: 5px;
+}
+/* ====== HEADER STYLE ====== */
+.amwaj-header {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 25px;
+}
+
+.amwaj-header .header-img {
+    width: 100%;
+    max-width: 900px;
+    height: auto;
+}
+
+/* ====== SIDE BACKGROUND RIGHT ====== */
+.side-background {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 45%;
+    height: 100vh;
+    background-image: url('../img/side_pattern.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: right center;
+    opacity: 0.25;
+    z-index: -1; /* خلف المحتوى */
+}
+
+/* Optional: لتخفيف ضغط الخلفية على النص */
+.approval-page {
+    background: rgba(255,255,255,0.9);
+    padding: 20px;
+    border-radius: 10px;
+}

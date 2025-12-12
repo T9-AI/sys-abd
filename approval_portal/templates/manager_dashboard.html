@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block title %}Manager Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* ---------------- PAGE ---------------- */
+.dashboard {
+    width: 92%;
+    margin: auto;
+    margin-top: 25px;
+    margin-bottom: 40px;
+    background: #fff;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+    font-family: 'Inter', sans-serif;
+}
+
+/* ---------------- HEADER ---------------- */
+.dashboard h2 {
+    font-size: 24px;
+    font-weight: 700;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+
+/* ---------------- STATS ---------------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 22px;
+}
+.stat-box {
+    padding: 14px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e2e2e2;
+    text-align: center;
+}
+.stat-title { font-size: 13px; color: #555; }
+.stat-num { font-size: 20px; font-weight: 800; }
+
+/* ---------------- FILTER BAR ---------------- */
+.filter-section, .sort-section {
+    margin-bottom: 18px;
+    padding: 14px;
+    background: #f3f4f6;
+    border: 1px solid #e1e1e1;
+    border-radius: 10px;
+}
+.filter-title, .sort-title {
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* filter buttons */
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.filter-btn {
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    color: #333;
+    font-size: 14px;
+    text-decoration: none;
+}
+.filter-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+/* ---------------- DROPDOWN FILTERS ---------------- */
+.adv-filters {
+    margin-top: 12px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.adv-select {
+    padding: 6px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+/* ---------------- TABLE ---------------- */
+.table-box {
+    margin-top: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+thead {
+    background: #2563eb;
+    color: white;
+}
+
+th {
+    padding: 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+td {
+    padding: 12px;
+    font-size: 14px;
+}
+
+tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+/* ---------------- STATUS ---------------- */
+.tag {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.tag-pending { background: #fde68a; color: #92400e; }
+.tag-approved { background: #bbf7d0; color: #166534; }
+.tag-rejected { background: #fecaca; color: #7f1d1d; }
+
+/* ---------------- BUTTON ---------------- */
+.review-btn {
+    padding: 6px 12px;
+    background: #2563eb;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+}
+.review-btn:hover {
+    background: #1d4ed8;
+}
+
+</style>
+
+
+<div class="dashboard">
+
+    <h2>Manager Dashboard – Level {{ level }}</h2>
+
+    <!-- -------- STATS -------- -->
+    <div class="stats-grid">
+        <div class="stat-box"><div class="stat-title">Total Requests</div><div class="stat-num">{{ total }}</div></div>
+        <div class="stat-box"><div class="stat-title">Pending L1</div><div class="stat-num">{{ pending_l1 }}</div></div>
+        <div class="stat-box"><div class="stat-title">Pending L2</div><div class="stat-num">{{ pending_l2 }}</div></div>
+        <div class="stat-box"><div class="stat-title">Approved</div><div class="stat-num">{{ approved }}</div></div>
+        <div class="stat-box"><div class="stat-title">Rejected</div><div class="stat-num">{{ rejected }}</div></div>
+    </div>
+
+
+    <!-- -------- FILTER BUTTONS -------- -->
+    <div class="filter-section">
+        <div class="filter-title">Filters</div>
+
+        <div class="filter-buttons">
+            <a class="filter-btn {% if active_filter=='all' %}active{% endif %}"
+               href="?filter=all">All ({{ total }})</a>
+
+            <a class="filter-btn {% if active_filter=='pending_l1' %}active{% endif %}"
+               href="?filter=pending_l1">Pending L1 ({{ pending_l1 }})</a>
+
+            <a class="filter-btn {% if active_filter=='pending_l2' %}active{% endif %}"
+               href="?filter=pending_l2">Pending L2 ({{ pending_l2 }})</a>
+
+            <a class="filter-btn {% if active_filter=='approved' %}active{% endif %}"
+               href="?filter=approved">Approved ({{ approved }})</a>
+
+            <a class="filter-btn {% if active_filter=='rejected' %}active{% endif %}"
+               href="?filter=rejected">Rejected ({{ rejected }})</a>
+        </div>
+
+
+        <!-- -------- ADVANCED FILTERS -------- -->
+        <div class="adv-filters">
+
+            <!-- Project Dropdown -->
+            <form method="get">
+                <select name="project" class="adv-select" onchange="this.form.submit()">
+                    <option value="">Filter by Project</option>
+
+                    {% for p in projects %}
+
+                        <option value="{{ p }}" {% if p == active_project %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="filter" value="{{ active_filter }}">
+            </form>
+
+            <!-- Unit Dropdown -->
+            <form method="get">
+                <select name="unit" class="adv-select" onchange="this.form.submit()">
+                    <option value="">Filter by Unit</option>
+
+                    {% for u in units %}
+                        <option value="{{ u }}" {% if u == active_unit %}selected{% endif %}>Unit {{ u }}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="filter" value="{{ active_filter }}">
+            </form>
+
+            <!-- Clear Filters -->
+            <a href="?" class="filter-btn" style="background:#ef4444;color:white;">Clear All</a>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- -------- SORTING -------- -->
+    <div class="sort-section">
+        <div class="sort-title">Sort By</div>
+
+        <div class="filter-buttons">
+
+            <a href="?sort=project" class="filter-btn {% if active_sort=='project' %}active{% endif %}">Project</a>
+
+            <a href="?sort=unit" class="filter-btn {% if active_sort=='unit' %}active{% endif %}">Unit</a>
+
+            <a href="?sort=latest" class="filter-btn {% if active_sort=='latest' %}active{% endif %}">Latest</a>
+
+        </div>
+    </div>
+
+
+
+    <!-- -------- TABLE -------- -->
+    <div class="table-box">
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="location.href='?sort=id'">ID</th>
+                    <th onclick="location.href='?sort=project'">Project ⬍</th>
+                    <th onclick="location.href='?sort=unit'">Unit ⬍</th>
+                    <th>Buyer</th>
+                    <th>Status</th>
+                    <th onclick="location.href='?sort=latest'">Created ⬍</th>
+                    <th>View</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for r in all_requests %}
+                <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.project_name }}</td>
+                    <td>{{ r.unit_number }}</td>
+                    <td>{{ r.buyer_name }}</td>
+
+                    <td>
+                        {% if r.status == 'Pending L1' or r.status == 'Pending L2' %}
+                            <span class="tag tag-pending">{{ r.status }}</span>
+                        {% elif r.status == 'Approved' %}
+                            <span class="tag tag-approved">{{ r.status }}</span>
+                        {% elif r.status == 'Rejected' %}
+                            <span class="tag tag-rejected">{{ r.status }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>{{ r.created_at }}</td>
+
+                    <td>
+                        <a class="review-btn" href="/manager/{{ level }}/request/{{ r.id }}">Review</a>
+                    </td>
+
+                </tr>
+                {% endfor %}
+
+                {% if all_requests|length == 0 %}
+                <tr>
+                    <td colspan="7" style="text-align:center;color:#777;padding:18px;">No data found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}
