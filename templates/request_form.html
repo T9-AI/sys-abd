@@ -1,0 +1,1821 @@
+{% extends "base.html" %}
+{% block title %}Approval Request{% endblock %}
+
+{% block content %}
+<div class="side-background"></div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/approval.css') }}">
+
+<style>
+/* =================== GLOBAL LAYOUT =================== */
+
+/* ===== Payment Plan grid alignment ===== */
+.plan-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* مسافة بسيطة بين كل سطر */
+}
+
+.plan-row {
+    display: grid;
+    grid-template-columns: 200px 190px 70px 190px; 
+    /* 1) النص  2) النسبة  3) كلمة Date  4) التاريخ */
+    column-gap: 10px;
+    align-items: center;
+}
+
+/* موبايل / شاشات صغيرة: نخليهم ينزلوا تحت بعض */
+@media (max-width: 768px) {
+    .plan-row {
+        grid-template-columns: 1fr;
+        row-gap: 4px;
+    }
+}
+
+.side-background {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(56,189,248,0.16), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(59,130,246,0.18), transparent 55%);
+  background-color: #020617;
+  opacity: 0.6;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* === FIX FULL-WIDTH HEADER === */
+/* HEADER inside the card (full width of card) */
+.amwaj-header {
+    margin: -26px -26px 18px -26px;   /* يمسك من أول الكرت لآخره */
+    padding: 14px 28px;
+    background: #ffffff;
+    border-radius: 24px 24px 0 0;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(15,23,42,0.35);
+}
+
+
+.amwaj-header .header-img {
+    width: 100%;      /* تمسك عرض الهدر بالكامل */
+    height: auto;
+    display: block;
+    object-fit: contain;  /* ما تقص الصورة، بس تكبّرها قد ما بتقدر */
+}
+
+
+
+.approval-page {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 40px auto 60px auto;
+  padding: 26px;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(15,23,42,0.9);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* soft grid overlay */
+.approval-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148,163,184,0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* HEADER FULL-WIDTH BAR (logo) */
+.amwaj-header {
+  margin: -26px -26px 18px -26px;
+  padding: 14px 28px;
+  background: #ffffff;
+  border-radius: 24px 24px 0 0;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.35);
+}
+.amwaj-header .header-img {
+  width: 100%;
+  max-height: 110px;
+  object-fit: contain;
+}
+
+/* THEME TOGGLE BAR */
+.theme-toggle-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.theme-toggle-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+.theme-toggle-btn {
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+}
+.theme-toggle-btn.active {
+  transform: translateY(-1px);
+}
+
+/* inner glass container */
+.approval-form {
+  position: relative;
+  margin-top: 8px;
+  border-radius: 22px;
+  padding: 22px 22px 26px 22px;
+}
+
+/* FORM TITLE + META */
+.form-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 4px 4px 10px 4px;
+  border-bottom: 1px solid;
+  margin-bottom: 14px;
+}
+.form-title-row h2 {
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.form-meta-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+.form-meta-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.form-meta-pill span.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+/* HERO STRIP */
+.form-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 2.3fr) minmax(0, 1.7fr);
+  gap: 18px;
+  padding: 12px 10px 18px 10px;
+  border-radius: 16px;
+  border: 1px solid;
+  margin-bottom: 20px;
+}
+.form-hero-left-title {
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+.form-hero-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+}
+.form-hero-main-big {
+  font-size: 20px;
+  font-weight: 600;
+}
+.form-hero-highlight {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 12px;
+}
+.form-hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.form-hero-tag {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 11px;
+}
+
+/* STEPPER */
+.form-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.form-stepper-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.19em;
+}
+.stepper-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stepper-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.step-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+}
+.step-label-main {
+  font-weight: 500;
+}
+.step-label-sub {
+  font-size: 11px;
+}
+
+/* SECTION BOXES */
+.section-box {
+  margin-top: 22px;
+  border-radius: 18px;
+  padding: 18px 18px 20px 18px;
+  border: 1px solid;
+  position: relative;
+  overflow: hidden;
+}
+.section-box > * {
+  position: relative;
+  z-index: 1;
+}
+.section-header,
+.section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.section-header::before,
+.section-title::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+/* GRID HELPERS */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px 18px;
+}
+.row-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 8px;
+}
+.field.inline {
+  min-width: 140px;
+}
+
+/* FIELDS */
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.req {
+  font-weight: 700;
+}
+.request-label {
+  font-weight: 600;
+}
+
+/* INPUTS */
+.input-line,
+.textarea-long {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid;
+  padding: 8px 10px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.08s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.input-line.small,
+.input-line.tiny {
+  max-width: 180px;
+}
+.textarea-long {
+  min-height: 80px;
+  resize: vertical;
+}
+.input-line:focus,
+.textarea-long:focus {
+  transform: translateY(-1px);
+}
+
+/* REQUESTS TABLE */
+.requests-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+  font-size: 13px;
+}
+.requests-table col.col-checkbox { width: 5%; }
+.requests-table col.col-label    { width: 21%; }
+.requests-table col.col-content  { width: 74%; }
+
+.requests-table tbody tr {
+  border-top: 1px solid;
+  transition: background-color 0.16s ease, box-shadow 0.16s ease, transform 0.08s ease;
+}
+.requests-table tbody tr:hover {
+  transform: translateY(-1px);
+}
+.request-row.active {
+  box-shadow: inset 2px 0 0;
+}
+.center {
+  text-align: center;
+}
+.req-toggle {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* ERROR / INFO BOXES */
+.error-box,
+.info-box {
+  margin-bottom: 16px;
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 13px;
+  border: 1px solid;
+  box-shadow: 0 14px 30px rgba(15,23,42,0.7);
+}
+.error-box h3 {
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+/* READONLY APPROVER BOX */
+.readonly-info .approver-box {
+  border-radius: 12px;
+  padding: 10px 12px 12px 12px;
+  border: 1px solid;
+}
+.readonly-info .approver-box h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* SUBMIT BUTTON ROW */
+.submit-row {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+.btn-primary {
+  border-radius: 999px;
+  padding: 10px 28px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.btn-primary::after {
+  content: "➜";
+  font-size: 13px;
+}
+
+/* NOTES */
+.doc-changes .field + .field {
+  margin-top: 8px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .form-hero {
+    grid-template-columns: minmax(0,1fr);
+  }
+}
+@media (max-width: 768px) {
+  .approval-page {
+    margin: 20px auto 40px auto;
+    padding: 16px;
+    border-radius: 20px;
+  }
+  .approval-form {
+    padding: 16px 14px 20px 14px;
+  }
+  .grid-2 {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .form-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .form-hero {
+    padding: 10px;
+  }
+}
+
+/* entrance animation */
+.section-box,
+.submit-row {
+  animation: fadeSlideUp 0.4s ease-out;
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);  }
+}
+
+/* =================== DARK THEME =================== */
+
+.theme-dark.approval-page {
+  background-color: #020617;
+  border: 1px solid #1f2937;
+  color: #e5e7eb;
+}
+.theme-dark .theme-toggle-label {
+  color: #9ca3af;
+}
+.theme-dark .theme-toggle-btn {
+  color: #9ca3af;
+  border-color: #4b5563;
+  background: rgba(15,23,42,0.9);
+}
+.theme-dark .theme-toggle-btn.active[data-theme="dark"] {
+  background: linear-gradient(135deg,#22c55e,#16a34a,#0f766e);
+  color: #f9fafb;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(22,163,74,0.7);
+}
+.theme-dark .theme-toggle-btn.active[data-theme="light"] {
+  background: linear-gradient(135deg,#38bdf8,#2563eb);
+  color: #f9fafb;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.7);
+}
+
+/* inner container */
+.theme-dark .approval-form {
+  background: linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.92));
+  box-shadow:
+    0 18px 40px rgba(15,23,42,0.9),
+    0 0 0 1px rgba(148,163,184,0.18);
+}
+
+/* title */
+.theme-dark .form-title-row {
+  border-bottom-color: rgba(148,163,184,0.45);
+}
+.theme-dark .form-title-row h2 {
+  background: linear-gradient(120deg, #f97316, #fde68a, #22c55e, #0ea5e9);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* meta */
+.theme-dark .form-meta-badge {
+  color: #9ca3af;
+}
+.theme-dark .form-meta-pill {
+  border-color: rgba(148,163,184,0.7);
+  background: radial-gradient(circle at top left, rgba(96,165,250,0.45), rgba(15,23,42,0.95));
+  color: #e5e7eb;
+}
+.theme-dark .form-meta-pill .dot {
+  background: #22c55e;
+  box-shadow: 0 0 12px rgba(34,197,94,0.9);
+}
+
+/* hero */
+.theme-dark .form-hero {
+  background: radial-gradient(circle at top left, rgba(56,189,248,0.16), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(52,211,153,0.16), transparent 60%),
+              rgba(15,23,42,0.95);
+  border-color: rgba(148,163,184,0.45);
+}
+.theme-dark .form-hero-left-title {
+  color: #9ca3af;
+}
+.theme-dark .form-hero-main-big {
+  color: #e5e7eb;
+}
+.theme-dark .form-hero-highlight {
+  border-color: rgba(34,197,94,0.6);
+  background: rgba(22,163,74,0.16);
+  color: #bbf7d0;
+}
+.theme-dark .form-hero-tag {
+  border-color: rgba(148,163,184,0.5);
+  color: #e5e7eb;
+}
+
+/* stepper */
+.theme-dark .form-stepper-title {
+  color: #9ca3af;
+}
+.theme-dark .stepper-item {
+  color: #e5e7eb;
+}
+.theme-dark .step-label-sub {
+  color: #9ca3af;
+}
+.theme-dark .step-badge {
+  background: radial-gradient(circle at top, rgba(59,130,246,0.9), rgba(30,64,175,0.95));
+  box-shadow: 0 0 10px rgba(59,130,246,0.9);
+}
+.theme-dark .stepper-item.done .step-badge {
+  background: radial-gradient(circle at top, rgba(34,197,94,0.95), rgba(22,163,74,0.95));
+  box-shadow: 0 0 12px rgba(34,197,94,0.85);
+}
+.theme-dark .stepper-item.current .step-badge {
+  background: radial-gradient(circle at top, rgba(251,191,36,0.96), rgba(245,158,11,0.96));
+  box-shadow: 0 0 14px rgba(251,191,36,0.9);
+}
+
+/* section boxes */
+.theme-dark .section-box {
+  background: #030712;
+  border-color: #1f2937;
+  box-shadow: 0 16px 40px rgba(15,23,42,0.85);
+}
+.theme-dark .section-header,
+.theme-dark .section-title {
+  background: radial-gradient(circle at top, #38bdf8, #0ea5e9);
+  box-shadow: 0 0 16px rgba(56,189,248,0.9);
+color: #a5f3fc;
+}
+.theme-dark .section-header::before,
+.theme-dark .section-title::before {
+  background: radial-gradient(circle at top, #0d1a95ff, #090d51ff);
+  box-shadow: 0 0 16px rgba(56,189,248,0.9);
+}
+
+/* fields & inputs */
+.theme-dark .field label {
+  color: #e5e7eb;
+}
+.theme-dark .request-label {
+  color: #e5e7eb;
+}
+.theme-dark .req {
+  color: #f97316;
+}
+.theme-dark .input-line,
+.theme-dark .textarea-long {
+  background: rgba(15,23,42,0.95);
+  border-color: rgba(148,163,184,0.7);
+  color: #e5e7eb;
+}
+.theme-dark .input-line::placeholder,
+.theme-dark .textarea-long::placeholder {
+  color: #6b7280;
+}
+.theme-dark .input-line:focus,
+.theme-dark .textarea-long:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 1px rgba(56,189,248,0.7), 0 0 32px rgba(56,189,248,0.35);
+}
+
+/* table */
+.theme-dark .requests-table tbody tr {
+  border-top-color: rgba(148,163,184,0.3);
+}
+.theme-dark .requests-table tbody tr:hover {
+  background: radial-gradient(circle at left, rgba(56,189,248,0.09), transparent 70%);
+}
+.theme-dark .request-row.active {
+  color: #38bdf8;
+  box-shadow: inset 2px 0 0 rgba(56,189,248,0.8);
+}
+.theme-dark .req-toggle {
+  accent-color: #38bdf8;
+}
+
+/* error / info */
+.theme-dark .error-box {
+  border-color: rgba(248,113,113,0.8);
+  background: radial-gradient(circle at top left, rgba(248,113,113,0.18), rgba(15,23,42,0.96));
+  color: #fecaca;
+}
+.theme-dark .info-box {
+  border-color: rgba(56,189,248,0.8);
+  background: radial-gradient(circle at top left, rgba(56,189,248,0.18), rgba(15,23,42,0.96));
+  color: #bae6fd;
+}
+
+/* approvers */
+.theme-dark .readonly-info .approver-box {
+  background: rgba(15,23,42,0.92);
+  border-color: rgba(148,163,184,0.5);
+}
+.theme-dark .readonly-info .approver-box h4 {
+  color: #a5b4fc;
+}
+
+/* submit */
+.theme-dark .btn-primary {
+  background: linear-gradient(135deg, #22c55e, #16a34a, #0f766e);
+  color: #f9fafb;
+  box-shadow:
+    0 18px 40px rgba(22,163,74,0.9),
+    0 0 0 1px rgba(74,222,128,0.5);
+}
+.theme-dark .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 24px 60px rgba(22,163,74,0.95),
+    0 0 0 1px rgba(74,222,128,0.8);
+}
+.theme-dark .btn-primary:active {
+  transform: translateY(0);
+  box-shadow:
+    0 14px 30px rgba(22,163,74,0.9),
+    0 0 0 1px rgba(74,222,128,0.8);
+}
+
+/* =================== LIGHT THEME =================== */
+
+.theme-light.approval-page {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+.theme-light .theme-toggle-label {
+  color: #6b7280;
+}
+.theme-light .theme-toggle-btn {
+  color: #374151;
+  border-color: #d1d5db;
+  background: #e5e7eb;
+}
+.theme-light .theme-toggle-btn.active[data-theme="dark"] {
+  background: linear-gradient(135deg,#111827,#020617);
+  color: #f9fafb;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(15,23,42,0.7);
+}
+.theme-light .theme-toggle-btn.active[data-theme="light"] {
+  background: linear-gradient(135deg,#2563eb,#1d4ed8);
+  color: #f9fafb;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.7);
+}
+
+/* inner container */
+.theme-light .approval-form {
+  background: #ffffff;
+  box-shadow:
+    0 18px 40px rgba(15,23,42,0.15),
+    0 0 0 1px rgba(148,163,184,0.15);
+}
+
+/* title */
+.theme-light .form-title-row {
+  border-bottom-color: #e5e7eb;
+}
+.theme-light .form-title-row h2 {
+  color: #111827;
+}
+
+/* meta */
+.theme-light .form-meta-badge {
+  color: #6b7280;
+}
+.theme-light .form-meta-pill {
+  border-color: #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+}
+.theme-light .form-meta-pill .dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34,197,94,0.8);
+}
+
+/* hero */
+.theme-light .form-hero {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+.theme-light .form-hero-left-title {
+  color: #6b7280;
+}
+.theme-light .form-hero-main-big {
+  color: #111827;
+}
+.theme-light .form-hero-highlight {
+  border-color: #22c55e;
+  background: #ecfdf3;
+  color: #166534;
+}
+.theme-light .form-hero-tag {
+  border-color: #e5e7eb;
+  color: #374151;
+}
+
+/* stepper */
+.theme-light .form-stepper-title {
+  color: #6b7280;
+}
+.theme-light .stepper-item {
+  color: #111827;
+}
+.theme-light .step-label-sub {
+  color: #6b7280;
+}
+.theme-light .step-badge {
+  background: radial-gradient(circle at top, #38bdf8, #2563eb);
+  box-shadow: 0 0 10px rgba(56,189,248,0.6);
+}
+.theme-light .stepper-item.done .step-badge {
+  background: radial-gradient(circle at top, #22c55e, #16a34a);
+}
+.theme-light .stepper-item.current .step-badge {
+  background: radial-gradient(circle at top, #facc15, #eab308);
+}
+
+/* section boxes */
+.theme-light .section-box {
+  background: #ffffff;
+  border-color: #e5e7eb;
+  box-shadow: 0 16px 40px rgba(15,23,42,0.08);
+}
+.theme-light .section-header,
+.theme-light .section-title {
+  color: #0f172a;
+}
+.theme-light .section-header::before,
+.theme-light .section-title::before {
+  background: radial-gradient(circle at top, #2563eb, #0ea5e9);
+  box-shadow: 0 0 12px rgba(59,130,246,0.6);
+}
+
+/* fields & inputs */
+.theme-light .field label {
+  color: #111827;
+}
+.theme-light .request-label {
+  color: #111827;
+}
+.theme-light .req {
+  color: #b91c1c;
+}
+.theme-light .input-line,
+.theme-light .textarea-long {
+  background: #ffffff;
+  border-color: #d1d5db;
+  color: #111827;
+}
+.theme-light .input-line::placeholder,
+.theme-light .textarea-long::placeholder {
+  color: #9ca3af;
+}
+.theme-light .input-line:focus,
+.theme-light .textarea-long:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37,99,235,0.6), 0 0 26px rgba(37,99,235,0.35);
+}
+
+/* table */
+.theme-light .requests-table tbody tr {
+  border-top-color: #e5e7eb;
+}
+.theme-light .requests-table tbody tr:hover {
+  background: #f3f4f6;
+}
+.theme-light .request-row.active {
+  color: #2563eb;
+  box-shadow: inset 2px 0 0 #2563eb;
+}
+.theme-light .req-toggle {
+  accent-color: #2563eb;
+}
+
+/* error / info */
+.theme-light .error-box {
+  border-color: #f87171;
+  background: #fef2f2;
+  color: #991b1b;
+}
+.theme-light .info-box {
+  border-color: #0ea5e9;
+  background: #e0f2fe;
+  color: #0c4a6e;
+}
+
+/* approvers */
+.theme-light .readonly-info .approver-box {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+.theme-light .readonly-info .approver-box h4 {
+  color: #1f2937;
+}
+
+/* submit */
+.theme-light .btn-primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #f9fafb;
+  box-shadow:
+    0 18px 38px rgba(37,99,235,0.45),
+    0 0 0 1px rgba(191,219,254,0.7);
+}
+.theme-light .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 22px 52px rgba(37,99,235,0.6),
+    0 0 0 1px rgba(191,219,254,0.8);
+}
+.theme-light .btn-primary:active {
+  transform: translateY(0);
+  box-shadow:
+    0 14px 30px rgba(37,99,235,0.55),
+    0 0 0 1px rgba(191,219,254,0.9);
+}
+</style>
+
+<div class="approval-page theme-dark" id="approvalPage">
+
+  <!-- ====== HEADER / LETTER HEAD ====== -->
+  <div class="amwaj-header">
+    <img src="{{ url_for('static', filename='img/header_amwaj.png') }}" class="header-img">
+  </div>
+
+  <!-- ====== THEME TOGGLE ====== -->
+  <div class="theme-toggle-bar">
+    <span class="theme-toggle-label">Theme</span>
+    <button type="button" class="theme-toggle-btn active" data-theme="dark">Dark</button>
+    <button type="button" class="theme-toggle-btn" data-theme="light">Light</button>
+  </div>
+
+  <!-- ====== ERRORS / STATUS ====== -->
+  {% if errors and errors|length %}
+  <div class="error-box">
+    <h3>Please fix the following errors:</h3>
+    <ul>
+      {% for e in errors %}
+      <li>{{ e }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if edit_token is defined %}
+  <div class="info-box">
+    <strong>You are editing an existing request.</strong>
+  </div>
+  {% endif %}
+
+  <!-- ====== FORM ====== -->
+{% if edit_token is defined %}
+  <form method="post"
+        action="{{ url_for('edit_request', token=edit_token) }}"
+        class="approval-form">
+{% else %}
+  <form method="post"
+        action="{{ url_for('new_request') }}"
+        class="approval-form">
+{% endif %}
+    {# {{ csrf_token() }} #}
+
+    {% set ex = existing if existing else None %}
+
+    <!-- عنوان الفورم + هيرو -->
+    <div class="form-title-row">
+      <h2>Approval Request</h2>
+      <div class="form-meta-badge">
+        <div class="form-meta-pill">
+          <span class="dot"></span>
+          Live Internal Approval Portal
+        </div>
+        <div>Secure • Audited • Traceable</div>
+      </div>
+    </div>
+
+    <div class="form-hero">
+      <div>
+        <div class="form-hero-left-title">Overview</div>
+        <div class="form-hero-main">
+          <div class="form-hero-main-big">
+            Unified Project &amp; Unit Approval Form
+          </div>
+          <span class="form-hero-highlight">
+            Designed for Amwaj Management Workflow
+          </span>
+        </div>
+        <div class="form-hero-tags">
+          <span class="form-hero-tag">Step 1 – Fill Project &amp; Unit Info</span>
+          <span class="form-hero-tag">Step 2 – Select Request Types</span>
+          <span class="form-hero-tag">Step 3 – Documentation &amp; Notes</span>
+          <span class="form-hero-tag">Step 4 – Sign &amp; Submit</span>
+        </div>
+      </div>
+      <div class="form-stepper">
+        <div class="form-stepper-title">Approval Journey</div>
+        <div class="stepper-list">
+          <div class="stepper-item done">
+            <div class="step-badge">1</div>
+            <div>
+              <div class="step-label-main">Agent Submission</div>
+              <div class="step-label-sub">You are here – provide complete &amp; accurate data.</div>
+            </div>
+          </div>
+          <div class="stepper-item">
+            <div class="step-badge">2</div>
+            <div>
+              <div class="step-label-main">Manager 1 Review</div>
+              <div class="step-label-sub">Commercial validation &amp; primary approval.</div>
+            </div>
+          </div>
+          <div class="stepper-item">
+            <div class="step-badge">3</div>
+            <div>
+              <div class="step-label-main">Manager 2 Review</div>
+              <div class="step-label-sub">Final compliance &amp; risk oversight.</div>
+            </div>
+          </div>
+          <div class="stepper-item">
+            <div class="step-badge">4</div>
+            <div>
+              <div class="step-label-main">Archiving &amp; Notification</div>
+              <div class="step-label-sub">Request stored &amp; shared with all stakeholders.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PROJECT INFO ====== -->
+    <section class="section-box">
+      <h3 class="section-header">Project / Unit Information</h3>
+      <div class="grid-2">
+        <div class="field">
+          <label>Project Name <span class="req">*</span></label>
+          <input type="text"
+                 name="project_name"
+                 class="input-line"
+                 list="project_choices_list"
+                 required
+                 value="{{ ex.project_name if ex else '' }}">
+          <datalist id="project_choices_list">
+            {% for p in project_choices %}
+            <option value="{{ p }}"></option>
+            {% endfor %}
+          </datalist>
+        </div>
+
+        <div class="field">
+          <label>Unit Number <span class="req">*</span></label>
+          <input type="text"
+                 name="unit_number"
+                 class="input-line"
+                 list="unit_choices_list"
+                 required
+                 value="{{ ex.unit_number if ex else '' }}">
+          <datalist id="unit_choices_list">
+            {% for u in unit_choices %}
+            <option value="{{ u }}"></option>
+            {% endfor %}
+          </datalist>
+        </div>
+
+        <div class="field">
+          <label>Paid Amount <span class="req">*</span></label>
+          <input type="number"
+                 step="0.01"
+                 name="paid_amount"
+                 class="input-line"
+                 required
+                 value="{{ ex.paid_amount if ex else '' }}">
+        </div>
+
+                <div class="field">
+                <label>Unit Status <span class="req">*</span> :</label>
+                <input type="text"
+                      name="unit_status"
+                      class="input-line"
+                      required
+                      value="{{ ex.unit_status if ex is defined and ex.unit_status is not none else '' }}">
+                </div>
+
+
+        <div class="field">
+          <label>Buyer’s Name <span class="req">*</span></label>
+          <input type="text"
+                 name="buyer_name"
+                 class="input-line"
+                 required
+                 value="{{ ex.buyer_name if ex else '' }}">
+        </div>
+
+        <div class="field">
+          <label>Agent Name <span class="req">*</span></label>
+          <input type="text"
+                 name="agent_name"
+                 class="input-line"
+                 required
+                 value="{{ ex.agent_name if ex else '' }}">
+        </div>
+
+        <div class="field">
+          <label>Agency’s Name <span class="req">*</span></label>
+          <input type="text"
+                 name="agency_name"
+                 class="input-line"
+                 required
+                 value="{{ ex.agency_name if ex else '' }}">
+        </div>
+
+        <div class="field">
+          <label>Agent Contact Number <span class="req">*</span></label>
+          <input type="text"
+                 name="agent_contact"
+                 class="input-line"
+                 required
+                 value="{{ ex.agent_contact if ex else '' }}">
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== TYPE OF REQUESTS TABLE ====== -->
+    <section class="section-box">
+      <div class="section-title">Type Of Requests</div>
+
+      <table class="requests-table">
+        <colgroup>
+          <col class="col-checkbox">
+          <col class="col-label">
+          <col class="col-content">
+        </colgroup>
+
+        <!-- === Price Reduction === -->
+        <tr class="request-row" data-section="price_reduction">
+          <td class="center">
+            <input type="checkbox"
+                   name="price_reduction_selected"
+                   class="req-toggle"
+                   {% if ex and ex.price_reduction_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Price Reduction</td>
+          <td>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Listed Price :</label>
+                <input type="number"
+                       step="0.01"
+                       name="pr_listed_price"
+                       class="input-line small"
+                       value="{{ ex.pr_listed_price if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Selling Price :</label>
+                <input type="number"
+                       step="0.01"
+                       name="pr_selling_price"
+                       class="input-line small"
+                       value="{{ ex.pr_selling_price if ex else '' }}">
+              </div>
+            </div>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Discount Amount :</label>
+                <input type="number"
+                       step="0.01"
+                       name="pr_discount_amount"
+                       class="input-line small"
+                       value="{{ ex.pr_discount_amount if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Discount % :</label>
+                <input type="number"
+                       step="0.01"
+                       name="pr_discount_percent"
+                       class="input-line tiny"
+                       value="{{ ex.pr_discount_percent if ex else '' }}">
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Discount For Bulk Purchase (3+ Units) === -->
+        <tr class="request-row" data-section="bulk_discount">
+          <td class="center">
+            <input type="checkbox"
+                   name="bulk_discount_selected"
+                   class="req-toggle"
+                   {% if ex and ex.bulk_discount_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Discount For Bulk Purchase (3+ Units)</td>
+          <td>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Units :</label>
+                <input type="number"
+                       name="bd_units"
+                       class="input-line tiny"
+                       value="{{ ex.bd_units if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Listed Price :</label>
+                <input type="number"
+                       step="0.01"
+                       name="bd_listed_price"
+                       class="input-line small"
+                       value="{{ ex.bd_listed_price if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Selling Price :</label>
+                <input type="number"
+                       step="0.01"
+                       name="bd_selling_price"
+                       class="input-line small"
+                       value="{{ ex.bd_selling_price if ex else '' }}">
+              </div>
+            </div>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Discount Amount :</label>
+                <input type="number"
+                       step="0.01"
+                       name="bd_discount_amount"
+                       class="input-line small"
+                       value="{{ ex.bd_discount_amount if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Discount % :</label>
+                <input type="number"
+                       step="0.01"
+                       name="bd_discount_percent"
+                       class="input-line tiny"
+                       value="{{ ex.bd_discount_percent if ex else '' }}">
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Change In Payment Plan === -->
+        <tr class="request-row" data-section="payment_plan">
+          <td class="center">
+            <input type="checkbox"
+                   name="change_payment_plan_selected"
+                   class="req-toggle"
+                   {% if ex and ex.change_payment_plan_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Change In Payment Plan</td>
+          <td>
+            <div class="sub-title-row">
+              <span>Payment Plan (Details)</span>
+            </div>
+
+            <div class="two-columns single-column">
+              <div class="plan-column">
+                <div class="plan-row">
+                  <label>Downpayment % :</label>
+                  <input type="number"
+                         step="0.01"
+                         name="cpp_down_payment_percent"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_down_payment_percent if ex else '' }}">
+                  <label>Date :</label>
+                  <input type="date"
+                         name="cpp_down_payment_date"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_down_payment_date if ex else '' }}">
+                </div>
+                <div class="plan-row">
+                  <label>2nd Payment % :</label>
+                  <input type="number"
+                         step="0.01"
+                         name="cpp_2nd_payment_percent"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_2nd_payment_percent if ex else '' }}">
+                  <label>Date :</label>
+                  <input type="date"
+                         name="cpp_2nd_payment_date"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_2nd_payment_date if ex else '' }}">
+                </div>
+                <div class="plan-row">
+                  <label>3rd Payment % :</label>
+                  <input type="number"
+                         step="0.01"
+                         name="cpp_3rd_payment_percent"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_3rd_payment_percent if ex else '' }}">
+                  <label>Date :</label>
+                  <input type="date"
+                         name="cpp_3rd_payment_date"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_3rd_payment_date if ex else '' }}">
+                </div>
+                <div class="plan-row">
+                  <label>4th Payment % :</label>
+                  <input type="number"
+                         step="0.01"
+                         name="cpp_4th_payment_percent"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_4th_payment_percent if ex else '' }}">
+                  <label>Date :</label>
+                  <input type="date"
+                         name="cpp_4th_payment_date"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_4th_payment_date if ex else '' }}">
+                </div>
+                <div class="plan-row">
+                  <label>5th Payment % :</label>
+                  <input type="number"
+                         step="0.01"
+                         name="cpp_5th_payment_percent"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_5th_payment_percent if ex else '' }}">
+                  <label>Date :</label>
+                  <input type="date"
+                         name="cpp_5th_payment_date"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_5th_payment_date if ex else '' }}">
+                </div>
+                <div class="plan-row">
+                  <label>6th Payment % :</label>
+                  <input type="number"
+                         step="0.01"
+                         name="cpp_6th_payment_percent"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_6th_payment_percent if ex else '' }}">
+                  <label>Date :</label>
+                  <input type="date"
+                         name="cpp_6th_payment_date"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_6th_payment_date if ex else '' }}">
+                </div>
+                <div class="plan-row">
+                  <label>Completion % :</label>
+                  <input type="number"
+                         step="0.01"
+                         name="cpp_completion_percent"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_completion_percent if ex else '' }}">
+                  <label>Date :</label>
+                  <input type="date"
+                         name="cpp_completion_date"
+                         class="input-line tiny"
+                         value="{{ ex.cpp_completion_date if ex else '' }}">
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Unit Switch === -->
+        <tr class="request-row" data-section="unit_switch">
+          <td class="center">
+            <input type="checkbox"
+                   name="unit_switch_selected"
+                   class="req-toggle"
+                   {% if ex and ex.unit_switch_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Unit Switch</td>
+          <td>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Booked Unit :</label>
+                <input type="text"
+                       name="us_booked_unit"
+                       class="input-line small"
+                       value="{{ ex.us_booked_unit if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>New Unit :</label>
+                <input type="text"
+                       name="us_new_unit"
+                       class="input-line small"
+                       value="{{ ex.us_new_unit if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>New Unit Selling Price :</label>
+                <input type="number"
+                       step="0.01"
+                       name="us_new_unit_selling_price"
+                       class="input-line small"
+                       value="{{ ex.us_new_unit_selling_price if ex else '' }}">
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Unit Cancellation === -->
+        <tr class="request-row" data-section="unit_cancellation">
+          <td class="center">
+            <input type="checkbox"
+                   name="unit_cancellation_selected"
+                   class="req-toggle"
+                   {% if ex and ex.unit_cancellation_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Unit Cancellation</td>
+          <td>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Amount Paid :</label>
+                <input type="number"
+                       step="0.01"
+                       name="uc_amount_paid"
+                       class="input-line small"
+                       value="{{ ex.uc_amount_paid if ex else '' }}">
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Refund === -->
+        <tr class="request-row" data-section="refund">
+          <td class="center">
+            <input type="checkbox"
+                   name="refund_selected"
+                   class="req-toggle"
+                   {% if ex and ex.refund_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Refund</td>
+          <td>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Booking Fees Amount :</label>
+                <input type="number"
+                       step="0.01"
+                       name="rf_booking_fees_amount"
+                       class="input-line small"
+                       value="{{ ex.rf_booking_fees_amount if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Payment Amount :</label>
+                <input type="number"
+                       step="0.01"
+                       name="rf_payment_amount"
+                       class="input-line small"
+                       value="{{ ex.rf_payment_amount if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Refund Amount :</label>
+                <input type="number"
+                       step="0.01"
+                       name="rf_refund_amount"
+                       class="input-line small"
+                       value="{{ ex.rf_refund_amount if ex else '' }}">
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Late Payment === -->
+        <tr class="request-row" data-section="late_payment">
+          <td class="center">
+            <input type="checkbox"
+                   name="late_payment_selected"
+                   class="req-toggle"
+                   {% if ex and ex.late_payment_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Late Payment</td>
+          <td>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Payment Schedule No :</label>
+                <input type="text"
+                       name="lp_payment_schedule_no"
+                       class="input-line tiny"
+                       value="{{ ex.lp_payment_schedule_no if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Initial Due Date :</label>
+                <input type="date"
+                       name="lp_initial_due_date"
+                       class="input-line tiny"
+                       value="{{ ex.lp_initial_due_date if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>New Payment Date :</label>
+                <input type="date"
+                       name="lp_new_payment_date"
+                       class="input-line tiny"
+                       value="{{ ex.lp_new_payment_date if ex else '' }}">
+              </div>
+            </div>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Penalty Amount :</label>
+                <input type="number"
+                       step="0.01"
+                       name="lp_penalty_amount"
+                       class="input-line small"
+                       value="{{ ex.lp_penalty_amount if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Overdue Period :</label>
+                <input type="text"
+                       name="lp_overdue_period"
+                       class="input-line small"
+                       value="{{ ex.lp_overdue_period if ex else '' }}">
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Waiver Of Late Payment Fees === -->
+        <tr class="request-row" data-section="waiver_late_fees">
+          <td class="center">
+            <input type="checkbox"
+                   name="waiver_late_fee_selected"
+                   class="req-toggle"
+                   {% if ex and ex.waiver_late_fee_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Waiver Of Late Payment Fees</td>
+          <td>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Downpayment SPA Date :</label>
+                <input type="date"
+                       name="wl_downpayment_spa_date"
+                       class="input-line tiny"
+                       value="{{ ex.wl_downpayment_spa_date if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>2nd Payment SPA Date :</label>
+                <input type="date"
+                       name="wl_2nd_payment_spa_date"
+                       class="input-line tiny"
+                       value="{{ ex.wl_2nd_payment_spa_date if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>3rd Payment SPA Date :</label>
+                <input type="date"
+                       name="wl_3rd_payment_spa_date"
+                       class="input-line tiny"
+                       value="{{ ex.wl_3rd_payment_spa_date if ex else '' }}">
+              </div>
+            </div>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>4th Payment SPA Date :</label>
+                <input type="date"
+                       name="wl_4th_payment_spa_date"
+                       class="input-line tiny"
+                       value="{{ ex.wl_4th_payment_spa_date if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>5th Payment SPA Date :</label>
+                <input type="date"
+                       name="wl_5th_payment_spa_date"
+                       class="input-line tiny"
+                       value="{{ ex.wl_5th_payment_spa_date if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>6th Payment SPA Date :</label>
+                <input type="date"
+                       name="wl_6th_payment_spa_date"
+                       class="input-line tiny"
+                       value="{{ ex.wl_6th_payment_spa_date if ex else '' }}">
+              </div>
+            </div>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Penalty Amount :</label>
+                <input type="number"
+                       step="0.01"
+                       name="wl_penalty_amount"
+                       class="input-line small"
+                       value="{{ ex.wl_penalty_amount if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>Waiver Amount :</label>
+                <input type="number"
+                       step="0.01"
+                       name="wl_waiver_amount"
+                       class="input-line small"
+                       value="{{ ex.wl_waiver_amount if ex else '' }}">
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Issuance Of The SPA === -->
+        <tr class="request-row" data-section="issuance_spa">
+          <td class="center">
+            <input type="checkbox"
+                   name="issuance_spa_selected"
+                   class="req-toggle"
+                   {% if ex and ex.issuance_spa_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Issuance Of The SPA</td>
+          <td>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Down Payment Received :</label>
+                <input type="number"
+                       step="0.01"
+                       name="spa_down_payment_received"
+                       class="input-line small"
+                       value="{{ ex.spa_down_payment_received if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>% :</label>
+                <input type="number"
+                       step="0.01"
+                       name="spa_percent"
+                       class="input-line tiny"
+                       value="{{ ex.spa_percent if ex else '' }}">
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Registration In DLD === -->
+        <tr class="request-row" data-section="registration_dld">
+          <td class="center">
+            <input type="checkbox"
+                   name="registration_dld_selected"
+                   class="req-toggle"
+                   {% if ex and ex.registration_dld_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Registration In DLD</td>
+          <td>
+            <div class="row-flex">
+              <div class="field inline">
+                <label>Down Payment Received :</label>
+                <input type="number"
+                       step="0.01"
+                       name="dld_down_payment_received"
+                       class="input-line small"
+                       value="{{ ex.dld_down_payment_received if ex else '' }}">
+              </div>
+              <div class="field inline">
+                <label>% :</label>
+                <input type="number"
+                       step="0.01"
+                       name="dld_percent"
+                       class="input-line tiny"
+                       value="{{ ex.dld_percent if ex else '' }}">
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- === Others === -->
+        <tr class="request-row" data-section="others">
+          <td class="center">
+            <input type="checkbox"
+                   name="others_selected"
+                   class="req-toggle"
+                   {% if ex and ex.others_selected %}checked{% endif %}>
+          </td>
+          <td class="request-label">Others</td>
+          <td>
+            <textarea name="others_text"
+                      class="textarea-long"
+                      rows="2">{{ ex.others_text if ex else '' }}</textarea>
+          </td>
+        </tr>
+
+      </table>
+    </section>
+
+    <!-- ====== CHANGE IN DOCUMENTATION TERMS / CLAUSES ====== -->
+    <section class="section-box">
+      <div class="section-title">Change In Documentation Terms / Clauses :</div>
+      <div class="doc-changes">
+        <div class="field">
+          <label>1. KYC :</label>
+          <input type="text"
+                 name="doc_kyc"
+                 class="input-line wide"
+                 value="{{ ex.doc_kyc if ex else '' }}">
+        </div>
+        <div class="field">
+          <label>2. Reservation Agreement :</label>
+          <input type="text"
+                 name="doc_reservation_agreement"
+                 class="input-line wide"
+                 value="{{ ex.doc_reservation_agreement if ex else '' }}">
+        </div>
+        <div class="field">
+          <label>3. SPA :</label>
+          <input type="text"
+                 name="doc_spa"
+                 class="input-line wide"
+                 value="{{ ex.doc_spa if ex else '' }}">
+        </div>
+        <div class="field">
+          <label>4. Others :</label>
+          <input type="text"
+                 name="doc_others"
+                 class="input-line wide"
+                 value="{{ ex.doc_others if ex else '' }}">
+        </div>
+        <div class="field">
+          <textarea name="comments"
+                    class="textarea-long"
+                    rows="3">{{ ex.comments if ex else '' }}</textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== NOTES / COMMENTS (free text) ====== -->
+    <section class="section-box">
+      <div class="section-title">Internal Notes / Comments (Free Text) :</div>
+      <textarea name="notes"
+                class="textarea-long"
+                rows="4">{{ ex.notes if ex is defined and ex.notes is not none else '' }}</textarea>
+    </section>
+
+    <!-- ====== REQUESTED BY ====== -->
+    <section class="section-box">
+      <div class="section-title">Requested By</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Agent Name <span class="req">*</span></label>
+          <input type="text"
+                name="agent_name"
+                class="input-line"
+                required
+                value="{{ ex.agent_name if ex else '' }}">
+        </div>
+
+        <div class="field">
+          <label>Date <span class="req">*</span> :</label>
+          <input type="date"
+                 name="requested_by_date"
+                 class="input-line"
+                 required
+                 value="{{ ex.requested_by_date if ex else '' }}">
+        </div>
+      </div>
+      <div class="field">
+        <label>Agent Signature <span class="req">*</span> :</label>
+        <input type="text"
+               name="requested_by_signature"
+               class="input-line wide"
+               required
+               value="{{ ex.requested_by_signature if ex else '' }}">
+      </div>
+    </section>
+
+    <!-- ====== APPROVED BY (READONLY) ====== -->
+    <section class="section-box readonly-info">
+      <div class="section-title">Approved By (filled in manager view)</div>
+      <div class="grid-2">
+        <div class="approver-box">
+          <h4>Manager 1</h4>
+          <div class="field">
+            <label>Name :</label>
+            <input type="text" class="input-line" disabled placeholder="Filled by Manager 1">
+          </div>
+          <div class="field">
+            <label>Signature :</label>
+            <input type="text" class="input-line" disabled placeholder="Filled by Manager 1">
+          </div>
+          <div class="field">
+            <label>Date :</label>
+            <input type="date" class="input-line" disabled>
+          </div>
+        </div>
+
+        <div class="approver-box">
+          <h4>Manager 2</h4>
+          <div class="field">
+            <label>Name :</label>
+            <input type="text" class="input-line" disabled placeholder="Filled by Manager 2">
+          </div>
+          <div class="field">
+            <label>Signature :</label>
+            <input type="text" class="input-line" disabled placeholder="Filled by Manager 2">
+          </div>
+          <div class="field">
+            <label>Date :</label>
+            <input type="date" class="input-line" disabled>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SUBMIT BUTTON ====== -->
+    <div class="submit-row">
+      <button type="submit" class="btn-primary">
+        Submit Approval Request
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- ====== JS: Type Of Requests + Theme Toggle ====== -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  /* ---------- Type Of Requests behaviour ---------- */
+  document.querySelectorAll('.req-toggle').forEach(function (chk) {
+    function updateRow() {
+      const tr = chk.closest('tr');
+      if (!tr) return;
+      const controls = tr.querySelectorAll('input, select, textarea');
+      if (chk.checked) {
+        tr.classList.add('active');
+        controls.forEach(function (el) {
+          if (el === chk) return;
+          el.disabled = false;
+          el.setAttribute('required', 'required');
+        });
+      } else {
+        tr.classList.remove('active');
+        controls.forEach(function (el) {
+          if (el === chk) return;
+          el.disabled = true;
+          el.removeAttribute('required');
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.value = '';
+          }
+        });
+      }
+    }
+    updateRow();
+    chk.addEventListener('change', updateRow);
+  });
+
+  /* ---------- Theme Toggle ---------- */
+  const page = document.getElementById('approvalPage');
+  const buttons = document.querySelectorAll('.theme-toggle-btn');
+  const STORAGE_KEY = 'amwaj_approval_theme';
+
+  function applyTheme(theme) {
+    const t = (theme === 'light') ? 'theme-light' : 'theme-dark';
+    page.classList.remove('theme-dark', 'theme-light');
+    page.classList.add(t);
+
+    buttons.forEach(btn => {
+      if (btn.dataset.theme === (theme === 'light' ? 'light' : 'dark')) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    try {
+      localStorage.setItem(STORAGE_KEY, theme === 'light' ? 'light' : 'dark');
+    } catch (e) {}
+  }
+
+  // load saved theme
+  let saved = null;
+  try {
+    saved = localStorage.getItem(STORAGE_KEY);
+  } catch (e) {}
+  applyTheme(saved === 'light' ? 'light' : 'dark');
+
+  // attach events
+  buttons.forEach(btn => {
+    btn.addEventListener('click', function () {
+      applyTheme(this.dataset.theme === 'light' ? 'light' : 'dark');
+    });
+  });
+});
+</script>
+
+{% endblock %}

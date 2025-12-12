@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <title>Approval Request Portal</title>
+    <style>
+        :root {
+            --primary:#005b7f;
+            --primary-soft:#e6f2f7;
+            --accent:#c89e5b;
+            --bg:#f3f4f6;
+            --border:#d1d5db;
+            --danger:#ef4444;
+            --success:#16a34a;
+            --warning:#f59e0b;
+        }
+        *{box-sizing:border-box;}
+        body{
+            font-family: Arial, sans-serif;
+            background:var(--bg);
+            margin:0;
+            padding:0;
+        }
+        header{
+            background:var(--primary);
+            color:#fff;
+            padding:8px 20px;
+            font-size:16px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        header .title{
+            font-weight:bold;
+            letter-spacing:.5px;
+        }
+        header .mini-nav a{
+            color:#e5e7eb;
+            margin-left:10px;
+            font-size:12px;
+            text-decoration:none;
+        }
+        header .mini-nav a:hover{
+            text-decoration:underline;
+        }
+        .page{
+            max-width: 1100px;
+            margin:18px auto;
+            background:#fff;
+            border-radius:6px;
+            box-shadow:0 4px 20px rgba(15,23,42,.12);
+            overflow:hidden;
+        }
+        .page-inner{
+            padding:18px 22px 24px;
+        }
+
+        /* Letterhead */
+        .letterhead{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:14px;
+            border-bottom:2px solid var(--border);
+            padding-bottom:10px;
+        }
+        .lh-left{
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+        .logo-box{
+            width:90px;
+            height:60px;
+            border:1px solid var(--border);
+            border-radius:4px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:11px;
+            color:#6b7280;
+            background:#fafafa;
+        }
+        .lh-company{
+            font-size:16px;
+            font-weight:bold;
+            color:var(--primary);
+            text-transform:uppercase;
+        }
+        .lh-right{
+            text-align:right;
+            font-size:11px;
+            color:#4b5563;
+            line-height:1.3;
+        }
+
+        h1,h2,h3{
+            margin:0 0 10px;
+        }
+        h2{
+            font-size:18px;
+            color:#111827;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-bottom:10px;
+        }
+        table td, table th{
+            border:1px solid var(--border);
+            padding:4px 6px;
+            font-size:12px;
+            vertical-align:top;
+        }
+        .no-border td, .no-border th{
+            border:none;
+        }
+        .section-title{
+            background:var(--primary-soft);
+            color:#111827;
+            font-weight:bold;
+            padding:4px 6px;
+            font-size:13px;
+            margin:8px 0 4px;
+            border-left:3px solid var(--primary);
+        }
+        label{
+            font-size:12px;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea{
+            width:100%;
+            padding:3px 4px;
+            border:1px solid var(--border);
+            border-radius:3px;
+            font-size:12px;
+        }
+        textarea{min-height:50px;}
+        .input-small{width:90px;}
+        .input-xs{width:60px;}
+        .input-date{width:130px;}
+        .checkbox-cell{
+            width:26px;
+            text-align:center;
+        }
+        .row-label{
+            width:19%;
+            white-space:nowrap;
+        }
+
+        .btn{
+            display:inline-block;
+            padding:6px 14px;
+            font-size:13px;
+            border-radius:4px;
+            border:none;
+            cursor:pointer;
+            margin-right:6px;
+        }
+        .btn-primary{
+            background:var(--primary);
+            color:#fff;
+        }
+        .btn-secondary{
+            background:#6b7280;
+            color:#fff;
+        }
+        .btn-link{
+            background:none;
+            border:none;
+            color:var(--primary);
+            padding:0;
+            cursor:pointer;
+            text-decoration:underline;
+            font-size:12px;
+        }
+        .btn-danger{background:var(--danger);color:#fff;}
+
+        .muted{font-size:11px;color:#6b7280;}
+        .error{color:var(--danger);font-size:12px;margin:6px 0;}
+        .success-box{
+            background:#ecfdf5;
+            border:1px solid #6ee7b7;
+            padding:8px;
+            border-radius:4px;
+            font-size:12px;
+            margin-bottom:10px;
+        }
+
+        .tag{
+            display:inline-block;
+            padding:2px 7px;
+            border-radius:999px;
+            font-size:11px;
+            font-weight:500;
+        }
+        .tag-pending{background:#fef9c3;color:#92400e;}
+        .tag-approved{background:#dcfce7;color:#166534;}
+        .tag-rejected{background:#fee2e2;color:#991b1b;}
+
+        .flex-row{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        .flex-gap{display:flex;gap:8px;flex-wrap:wrap;}
+
+        /* Dashboard */
+        .stats{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-bottom:8px;
+        }
+        .stat-box{
+            background:#f9fafb;
+            border:1px solid var(--border);
+            border-radius:4px;
+            padding:6px 10px;
+            font-size:12px;
+        }
+        .filters{
+            margin-bottom:6px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+        }
+        .filter-chip{
+            padding:3px 9px;
+            border-radius:999px;
+            border:1px solid var(--border);
+            font-size:11px;
+            cursor:pointer;
+            text-decoration:none;
+            color:#374151;
+            background:#fff;
+        }
+        .filter-chip.active{
+            border-color:var(--primary);
+            background:var(--primary-soft);
+            color:#111827;
+        }
+        .table-sm td, .table-sm th{font-size:11px;padding:4px 5px;}
+        .sortable{cursor:pointer;text-decoration:underline;}
+
+        .signature-row{
+            margin-top:10px;
+            display:flex;
+            gap:10px;
+        }
+        .signature-box{
+            flex:1;
+            border:1px solid var(--border);
+            border-radius:4px;
+            padding:6px;
+            font-size:11px;
+        }
+        .signature-box label{font-weight:bold;}
+
+        .required-star{color:var(--danger);margin-left:2px;}
+        .required-field input,
+        .required-field select{
+            border-left:3px solid var(--accent);
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="title">Approval Request Portal</div>
+    <div class="mini-nav">
+    <a href="/request/new">New Request</a>
+
+    {# تظهر روابط المدير فقط في الصفحات اللي بتطلبها صراحةً #}
+    {% if show_manager_links %}
+        <a href="/manager/login/1">Manager 1</a>
+        <a href="/manager/login/2">Manager 2</a>
+    {% endif %}
+</div>
+
+</header>
+
+
+
+<div class="page">
+    <div class="page-inner">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+</body>
+</html>
